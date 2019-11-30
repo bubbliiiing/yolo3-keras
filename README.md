@@ -2,7 +2,8 @@
 这是一个yolo3-keras的源码，可以用于训练自己的模型。
 
 # 文件下载
-训练所需的yolo_weights.h5可以在Release里面下载。
+训练所需的yolo_weights.h5可以在Release里面下载。  
+https://github.com/bubbliiiing/yolo3-keras/releases
 
 # 训练步骤
 1、本文使用VOC格式进行训练。  
