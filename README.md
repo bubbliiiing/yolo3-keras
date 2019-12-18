@@ -3,8 +3,9 @@
 
 # 文件下载
 训练所需的yolo_weights.h5可以在Release里面下载。  
-https://github.com/bubbliiiing/yolo3-keras/releases
-
+https://github.com/bubbliiiing/yolo3-keras/releases  
+也可以去百度网盘下载  
+链接: https://pan.baidu.com/s/1izPebZ6PVU25q1we1UgSGQ 提取码: tbj3  
 # 训练步骤
 1、本文使用VOC格式进行训练。  
 2、训练前将标签文件放在VOCdevkit文件夹下的VOC2007文件夹下的Annotation中。  
