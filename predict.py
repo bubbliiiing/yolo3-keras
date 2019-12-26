@@ -8,7 +8,7 @@ yolo = YOLO()
 while True:
     img = input('Input image filename:')
     try:
-        image = Image.open("img/street.jpg.")
+        image = Image.open(img)
     except:
         print('Open Error! Try again!')
         continue
