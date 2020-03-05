@@ -106,7 +106,7 @@ def preprocess_true_boxes(true_boxes, input_shape, anchors, num_classes):
         box_area = wh[..., 0] * wh[..., 1]
         anchor_area = anchors[..., 0] * anchors[..., 1]
         iou = intersect_area / (box_area + anchor_area - intersect_area)
-        # (n,9,1)
+        # 维度是(n) 感谢 消尽不死鸟 的提醒
         best_anchor = np.argmax(iou, axis=-1)
 
         for t, n in enumerate(best_anchor):
