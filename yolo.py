@@ -108,8 +108,7 @@ class YOLO(object):
         start = timer()
 
         # 调整图片使其符合输入要求
-        new_image_size = (image.width - (image.width % 32),
-                            image.height - (image.height % 32))
+        new_image_size = (self.model_image_size[0],self.model_image_size[1])
         boxed_image = letterbox_image(image, new_image_size)
         image_data = np.array(boxed_image, dtype='float32')
         image_data /= 255.
