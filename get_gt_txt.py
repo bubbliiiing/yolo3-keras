@@ -19,6 +19,10 @@ for image_id in image_ids:
     with open("./input/ground-truth/"+image_id+".txt", "w") as new_f:
         root = ET.parse("VOCdevkit/VOC2007/Annotations/"+image_id+".xml").getroot()
         for obj in root.findall('object'):
+            if obj.find('difficult')!=None:
+                difficult = obj.find('difficult').text
+                if int(difficult)==1:
+                    continue
             obj_name = obj.find('name').text
             bndbox = obj.find('bndbox')
             left = bndbox.find('xmin').text
