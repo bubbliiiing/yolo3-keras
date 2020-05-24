@@ -66,8 +66,7 @@ class mAP_YOLO(YOLO):
     def detect_image(self, image_id, image):
         f = open("./input/detection-results/"+image_id+".txt","w") 
         # 调整图片使其符合输入要求
-        new_image_size = (416,416)
-        boxed_image = letterbox_image(image, new_image_size)
+        boxed_image = letterbox_image(image, self.model_image_size)
         image_data = np.array(boxed_image, dtype='float32')
         image_data /= 255.
         image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
