@@ -163,6 +163,9 @@ if __name__ == "__main__":
     
     # 载入预训练权重
     print('Load weights {}.'.format(weights_path))
+    #-------------------------------------------#
+    #   权值文件的下载请看README
+    #-------------------------------------------#
     model_body.load_weights(weights_path, by_name=True, skip_mismatch=True)
     
     # y_true为13,13,3,85
