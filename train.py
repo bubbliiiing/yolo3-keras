@@ -137,7 +137,10 @@ if __name__ == "__main__":
     # 获取classes和anchor的位置
     classes_path = 'model_data/voc_classes.txt'    
     anchors_path = 'model_data/yolo_anchors.txt'
-    # 预训练模型的位置
+    #-------------------------------------------#
+    #   权值文件的下载请看README
+    #   预训练模型的位置
+    #-------------------------------------------#
     weights_path = 'model_data/yolo_weights.h5'
     # 获得classes和anchor
     class_names = get_classes(classes_path)
@@ -163,9 +166,6 @@ if __name__ == "__main__":
     
     # 载入预训练权重
     print('Load weights {}.'.format(weights_path))
-    #-------------------------------------------#
-    #   权值文件的下载请看README
-    #-------------------------------------------#
     model_body.load_weights(weights_path, by_name=True, skip_mismatch=True)
     
     # y_true为13,13,3,85
