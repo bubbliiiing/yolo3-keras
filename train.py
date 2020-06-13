@@ -216,7 +216,7 @@ if __name__ == "__main__":
                 validation_steps=max(1, num_val//batch_size),
                 epochs=50,
                 initial_epoch=0,
-                callbacks=[logging, checkpoint])
+                callbacks=[logging, checkpoint, reduce_lr, early_stopping])
         model.save_weights(log_dir + 'trained_weights_stage_1.h5')
 
     for i in range(freeze_layers): model_body.layers[i].trainable = True
@@ -234,5 +234,5 @@ if __name__ == "__main__":
                 validation_steps=max(1, num_val//batch_size),
                 epochs=100,
                 initial_epoch=50,
-                callbacks=[logging, checkpoint])
+                callbacks=[logging, checkpoint, reduce_lr, early_stopping])
         model.save_weights(log_dir + 'last1.h5')
