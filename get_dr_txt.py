@@ -10,6 +10,7 @@ from keras.applications.imagenet_utils import preprocess_input
 from keras import backend as K
 from utils.utils import letterbox_image
 from nets.yolo3 import yolo_body,yolo_eval
+from tqdm import tqdm
 import colorsys
 import numpy as np
 import os
@@ -18,7 +19,7 @@ class mAP_YOLO(YOLO):
     #   获得所有的分类
     #---------------------------------------------------#
     def generate(self):
-        self.score = 0.05
+        self.score = 0.001
         model_path = os.path.expanduser(self.model_path)
         assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
         
@@ -101,7 +102,7 @@ if not os.path.exists("./input/detection-results"):
 if not os.path.exists("./input/images-optional"):
     os.makedirs("./input/images-optional")
 
-for image_id in image_ids:
+for image_id in tqdm(image_ids):
     image_path = "./VOCdevkit/VOC2007/JPEGImages/"+image_id+".jpg"
     image = Image.open(image_path)
     # 开启后在之后计算mAP可以可视化
