@@ -12,7 +12,7 @@
 ### 性能情况
 | 训练数据集 | 权值文件名称 | 测试数据集 | 输入图片大小 | mAP 0.5:0.95 | mAP 0.5 |
 | :-----: | :-----: | :------: | :------: | :------: | :-----: |
-| COCO-Train2017 | [yolo_weights.h5](https://github.com/bubbliiiing/yolo3-keras/releases/download/v1.0/yolo_weights.h5) | COCO-Val2017 | 416x416 | 37.4 | 66.0
+| COCO-Train2017 | [yolo_weights.h5](https://github.com/bubbliiiing/yolo3-keras/releases/download/v1.0/yolo_weights.h5) | COCO-Val2017 | 416x416 | 38.1 | 66.8
 
 ### 所需环境
 tensorflow-gpu==1.13.1  
