@@ -20,6 +20,7 @@ class mAP_YOLO(YOLO):
     #---------------------------------------------------#
     def generate(self):
         self.score = 0.01
+        self.iou = 0.5
         model_path = os.path.expanduser(self.model_path)
         assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
         
@@ -57,8 +58,8 @@ class mAP_YOLO(YOLO):
         self.input_image_shape = K.placeholder(shape=(2, ))
 
         boxes, scores, classes = yolo_eval(self.yolo_model.output, self.anchors,
-                num_classes, self.input_image_shape,
-                score_threshold=self.score, iou_threshold=self.iou)
+                num_classes, self.input_image_shape, max_boxes = self.max_boxes,
+                score_threshold = self.score, iou_threshold = self.iou)
         return boxes, scores, classes
 
     #---------------------------------------------------#
