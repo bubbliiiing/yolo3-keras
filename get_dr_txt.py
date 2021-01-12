@@ -3,17 +3,21 @@
 #   具体视频教程可查看
 #   https://www.bilibili.com/video/BV1zE411u7Vw
 #----------------------------------------------------#
-from yolo import YOLO
-from PIL import Image
-from keras.layers import Input
-from keras.applications.imagenet_utils import preprocess_input
-from keras import backend as K
-from utils.utils import letterbox_image
-from nets.yolo3 import yolo_body,yolo_eval
-from tqdm import tqdm
 import colorsys
-import numpy as np
 import os
+
+import numpy as np
+from keras import backend as K
+from keras.applications.imagenet_utils import preprocess_input
+from keras.layers import Input
+from PIL import Image
+from tqdm import tqdm
+
+from nets.yolo3 import yolo_body, yolo_eval
+from utils.utils import letterbox_image
+from yolo import YOLO
+
+
 class mAP_YOLO(YOLO):
     #---------------------------------------------------#
     #   获得所有的分类

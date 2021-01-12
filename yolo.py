@@ -1,17 +1,23 @@
-import os
-import numpy as np
-import copy
 import colorsys
+import copy
+import os
 from timeit import default_timer as timer
+
+import numpy as np
 from keras import backend as K
-from keras.models import load_model
 from keras.layers import Input
-from PIL import Image, ImageFont, ImageDraw
-from nets.yolo3 import yolo_body,yolo_eval
+from keras.models import load_model
+from PIL import Image, ImageDraw, ImageFont
+
+from nets.yolo3 import yolo_body, yolo_eval
 from utils.utils import letterbox_image
+
+
 #--------------------------------------------#
 #   使用自己训练好的模型预测需要修改2个参数
 #   model_path和classes_path都需要修改！
+#   如果出现shape不匹配，一定要注意
+#   训练时的model_path和classes_path参数的修改
 #--------------------------------------------#
 class YOLO(object):
     _defaults = {
@@ -62,18 +68,22 @@ class YOLO(object):
         return np.array(anchors).reshape(-1, 2)
 
     #---------------------------------------------------#
-    #   获得所有的分类
+    #   载入模型
     #---------------------------------------------------#
     def generate(self):
         model_path = os.path.expanduser(self.model_path)
         assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
         
-        # 计算anchor数量
+        #---------------------------------------------------#
+        #   计算先验框的数量和种类的数量
+        #---------------------------------------------------#
         num_anchors = len(self.anchors)
         num_classes = len(self.class_names)
 
-        # 载入模型，如果原来的模型里已经包括了模型结构则直接载入。
-        # 否则先构建模型再载入
+        #---------------------------------------------------------#
+        #   载入模型，如果原来的模型里已经包括了模型结构则直接载入。
+        #   否则先构建模型再载入
+        #---------------------------------------------------------#
         try:
             self.yolo_model = load_model(model_path, compile=False)
         except:
@@ -101,6 +111,10 @@ class YOLO(object):
 
         self.input_image_shape = K.placeholder(shape=(2, ))
 
+        #---------------------------------------------------------#
+        #   在yolo_eval函数中，我们会对预测结果进行后处理
+        #   后处理的内容包括，解码、非极大抑制、门限筛选等
+        #---------------------------------------------------------#
         boxes, scores, classes = yolo_eval(self.yolo_model.output, self.anchors,
                 num_classes, self.input_image_shape, max_boxes = self.max_boxes,
                 score_threshold = self.score, iou_threshold = self.iou)
@@ -111,30 +125,37 @@ class YOLO(object):
     #---------------------------------------------------#
     def detect_image(self, image):
         start = timer()
-
-        # 调整图片使其符合输入要求
+        #---------------------------------------------------------#
+        #   给图像增加灰条，实现不失真的resize
+        #---------------------------------------------------------#
         new_image_size = (self.model_image_size[1],self.model_image_size[0])
         boxed_image = letterbox_image(image, new_image_size)
         image_data = np.array(boxed_image, dtype='float32')
         image_data /= 255.
-        image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
+        #---------------------------------------------------------#
+        #   添加上batch_size维度
+        #---------------------------------------------------------#
+        image_data = np.expand_dims(image_data, 0)
 
-        # 预测结果
+        #---------------------------------------------------------#
+        #   将图像输入网络当中进行预测！
+        #---------------------------------------------------------#
         out_boxes, out_scores, out_classes = self.sess.run(
             [self.boxes, self.scores, self.classes],
             feed_dict={
                 self.yolo_model.input: image_data,
                 self.input_image_shape: [image.size[1], image.size[0]],
-                K.learning_phase(): 0
-            })
+                K.learning_phase(): 0})
 
         print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
-        # 设置字体
+
+        #---------------------------------------------------------#
+        #   设置字体
+        #---------------------------------------------------------#
         font = ImageFont.truetype(font='font/simhei.ttf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
-        thickness = (image.size[0] + image.size[1]) // 300
 
-        small_pic=[]
+        thickness = max((image.size[0] + image.size[1]) // 300, 1)
 
         for i, c in list(enumerate(out_classes)):
             predicted_class = self.class_names[c]
@@ -157,7 +178,7 @@ class YOLO(object):
             draw = ImageDraw.Draw(image)
             label_size = draw.textsize(label, font)
             label = label.encode('utf-8')
-            print(label)
+            print(label, top, left, bottom, right)
             
             if top - label_size[1] >= 0:
                 text_origin = np.array([left, top - label_size[1]])
