@@ -296,7 +296,7 @@ if __name__ == "__main__":
         Init_epoch = 0
         Freeze_epoch = 50
         batch_size = 16
-        learning_rate_base = 1e-4
+        learning_rate_base = 1e-3
 
         model.compile(optimizer=Adam(lr=learning_rate_base), loss={
             'yolo_loss': lambda y_true, y_pred: y_pred})
