@@ -10,12 +10,13 @@ from utils.utils import compose
 
 #--------------------------------------------------#
 #   单次卷积DarknetConv2D
-#   正则化系数为5e-4
 #   如果步长为2则自己设定padding方式。
+#   测试中发现没有l2正则化效果更好，所以去掉了l2正则化
 #--------------------------------------------------#
 @wraps(Conv2D)
 def DarknetConv2D(*args, **kwargs):
-    darknet_conv_kwargs = {'kernel_regularizer': l2(5e-4)}
+    # darknet_conv_kwargs = {'kernel_regularizer': l2(5e-4)}
+    darknet_conv_kwargs = {}
     darknet_conv_kwargs['padding'] = 'valid' if kwargs.get('strides')==(2,2) else 'same'
     darknet_conv_kwargs.update(kwargs)
     return Conv2D(*args, **darknet_conv_kwargs)
