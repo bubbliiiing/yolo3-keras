@@ -314,7 +314,6 @@ if __name__ == "__main__":
 
     for i in range(freeze_layers): model_body.layers[i].trainable = True
 
-    # 解冻后训练
     if True:
         Freeze_epoch = 50
         Epoch = 100
