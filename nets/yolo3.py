@@ -194,7 +194,7 @@ def yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape):
 #---------------------------------------------------#
 #   获取每个box和它的得分
 #---------------------------------------------------#
-def yolo_boxes_and_scores(feats, anchors, num_classes, input_shape, image_shape):
+def yolo_boxes_and_scores(feats, anchors, num_classes, input_shape, image_shape, letterbox_image):
     #-----------------------------------------------------------------#
     #   将预测值调成真实值
     #   box_xy : -1,13,13,3,2; 
@@ -209,7 +209,23 @@ def yolo_boxes_and_scores(feats, anchors, num_classes, input_shape, image_shape)
     #   我们需要对齐进行修改，去除灰条的部分。
     #   将box_xy、和box_wh调节成y_min,y_max,xmin,xmax
     #-----------------------------------------------------------------#
-    boxes = yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape)
+    if letterbox_image:
+        boxes = yolo_correct_boxes(box_xy, box_wh, input_shape, image_shape)
+    else:
+        box_yx = box_xy[..., ::-1]
+        box_hw = box_wh[..., ::-1]
+        box_mins = box_yx - (box_hw / 2.)
+        box_maxes = box_yx + (box_hw / 2.)
+
+        input_shape = K.cast(input_shape, K.dtype(box_yx))
+        image_shape = K.cast(image_shape, K.dtype(box_yx))
+
+        boxes =  K.concatenate([
+            box_mins[..., 0:1] * image_shape[0],  # y_min
+            box_mins[..., 1:2] * image_shape[1],  # x_min
+            box_maxes[..., 0:1] * image_shape[0],  # y_max
+            box_maxes[..., 1:2] * image_shape[1]  # x_max
+        ])
     #-----------------------------------------------------------------#
     #   获得最终得分和框的位置
     #-----------------------------------------------------------------#
@@ -227,7 +243,8 @@ def yolo_eval(yolo_outputs,
               image_shape,
               max_boxes=20,
               score_threshold=.6,
-              iou_threshold=.5):
+              iou_threshold=.5,
+              letterbox_image=True):
     #---------------------------------------------------#
     #   获得特征层的数量，有效特征层的数量为3
     #---------------------------------------------------#
@@ -249,7 +266,7 @@ def yolo_eval(yolo_outputs,
     #   对每个特征层进行处理
     #-----------------------------------------------------------#
     for l in range(num_layers):
-        _boxes, _box_scores = yolo_boxes_and_scores(yolo_outputs[l], anchors[anchor_mask[l]], num_classes, input_shape, image_shape)
+        _boxes, _box_scores = yolo_boxes_and_scores(yolo_outputs[l], anchors[anchor_mask[l]], num_classes, input_shape, image_shape, letterbox_image)
         boxes.append(_boxes)
         box_scores.append(_box_scores)
     #-----------------------------------------------------------#

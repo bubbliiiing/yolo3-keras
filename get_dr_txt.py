@@ -61,9 +61,13 @@ class mAP_YOLO(YOLO):
 
         self.input_image_shape = K.placeholder(shape=(2, ))
 
+        #---------------------------------------------------------#
+        #   在yolo_eval函数中，我们会对预测结果进行后处理
+        #   后处理的内容包括，解码、非极大抑制、门限筛选等
+        #---------------------------------------------------------#
         boxes, scores, classes = yolo_eval(self.yolo_model.output, self.anchors,
                 num_classes, self.input_image_shape, max_boxes = self.max_boxes,
-                score_threshold = self.score, iou_threshold = self.iou)
+                score_threshold = self.score, iou_threshold = self.iou, letterbox_image = self.letterbox_image)
         return boxes, scores, classes
 
     #---------------------------------------------------#
@@ -71,9 +75,15 @@ class mAP_YOLO(YOLO):
     #---------------------------------------------------#
     def detect_image(self, image_id, image):
         f = open("./input/detection-results/"+image_id+".txt","w") 
-        # 调整图片使其符合输入要求
-        new_image_size = (self.model_image_size[1],self.model_image_size[0])
-        boxed_image = letterbox_image(image, new_image_size)
+        #---------------------------------------------------------#
+        #   给图像增加灰条，实现不失真的resize
+        #   也可以直接resize进行识别
+        #---------------------------------------------------------#
+        if self.letterbox_image:
+            boxed_image = letterbox_image(image, (self.model_image_size[1],self.model_image_size[0]))
+        else:
+            boxed_image = image.convert('RGB')
+            boxed_image = boxed_image.resize((self.model_image_size[1],self.model_image_size[0]), Image.BICUBIC)
         image_data = np.array(boxed_image, dtype='float32')
         image_data /= 255.
         image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
