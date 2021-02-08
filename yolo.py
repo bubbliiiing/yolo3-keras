@@ -32,7 +32,7 @@ class YOLO(object):
         #   该变量用于控制是否使用letterbox_image对输入图像进行不失真的resize，
         #   在多次测试后，发现关闭letterbox_image直接resize的效果更好
         #---------------------------------------------------------------------#
-        "letterbox_image"   : True,
+        "letterbox_image"   : False,
     }
 
     @classmethod
