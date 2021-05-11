@@ -1,7 +1,5 @@
 import colorsys
-import copy
 import os
-from timeit import default_timer as timer
 
 import numpy as np
 from keras import backend as K
@@ -130,14 +128,18 @@ class YOLO(object):
     #---------------------------------------------------#
     def detect_image(self, image):
         #---------------------------------------------------------#
+        #   在这里将图像转换成RGB图像，防止灰度图在预测时报错。
+        #---------------------------------------------------------#
+        image = image.convert('RGB')
+
+        #---------------------------------------------------------#
         #   给图像增加灰条，实现不失真的resize
         #   也可以直接resize进行识别
         #---------------------------------------------------------#
         if self.letterbox_image:
             boxed_image = letterbox_image(image, (self.model_image_size[1],self.model_image_size[0]))
         else:
-            boxed_image = image.convert('RGB')
-            boxed_image = boxed_image.resize((self.model_image_size[1],self.model_image_size[0]), Image.BICUBIC)
+            boxed_image = image.resize((self.model_image_size[1],self.model_image_size[0]), Image.BICUBIC)
         image_data = np.array(boxed_image, dtype='float32')
         image_data /= 255.
         #---------------------------------------------------------#
@@ -160,7 +162,7 @@ class YOLO(object):
         #---------------------------------------------------------#
         #   设置字体
         #---------------------------------------------------------#
-        font = ImageFont.truetype(font='font/simhei.ttf',
+        font = ImageFont.truetype(font='model_data/simhei.ttf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
 
         thickness = max((image.size[0] + image.size[1]) // 300, 1)

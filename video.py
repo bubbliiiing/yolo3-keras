@@ -8,7 +8,6 @@ import time
 
 import cv2
 import numpy as np
-from keras.layers import Input
 from PIL import Image
 
 from yolo import YOLO

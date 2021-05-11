@@ -8,7 +8,7 @@ import os
 
 import numpy as np
 from keras import backend as K
-from keras.applications.imagenet_utils import preprocess_input
+from keras.models import load_model
 from keras.layers import Input
 from PIL import Image
 from tqdm import tqdm
