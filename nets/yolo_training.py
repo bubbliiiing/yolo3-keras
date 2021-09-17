@@ -149,7 +149,7 @@ def yolo_loss(args, input_shape, anchors, anchors_mask, num_classes, ignore_thre
         #-----------------------------------------------------------#
         #   在这个地方进行一个循环、循环是对每一张图片进行的
         #-----------------------------------------------------------#
-        _, ignore_mask = K.control_flow_ops.while_loop(lambda b,*args: b < m, loop_body, [0, ignore_mask])
+        _, ignore_mask = tf.while_loop(lambda b,*args: b < m, loop_body, [0, ignore_mask])
 
         #-----------------------------------------------------------#
         #   ignore_mask用于提取出作为负样本的特征点
