@@ -89,12 +89,12 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     Freeze_Train        = True
     #------------------------------------------------------#
-    #   用于设置是否使用多线程读取数据，0代表关闭多线程
+    #   用于设置是否使用多线程读取数据，1代表关闭多线程
     #   开启后会加快数据读取速度，但是会占用更多内存
     #   keras里开启多线程有些时候速度反而慢了许多
     #   在IO为瓶颈的时候再开启多线程，即GPU运算速度远大于读取图片的速度。
     #------------------------------------------------------#
-    num_workers         = 0
+    num_workers         = 1
     #----------------------------------------------------#
     #   获得图片路径和标签
     #----------------------------------------------------#
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             validation_steps    = epoch_step_val,
             epochs              = end_epoch,
             initial_epoch       = start_epoch,
-            use_multiprocessing = True if num_workers != 0 else False,
+            use_multiprocessing = True if num_workers > 1 else False,
             workers             = num_workers,
             callbacks           = [logging, checkpoint, reduce_lr, early_stopping, loss_history]
         )
@@ -215,7 +215,7 @@ if __name__ == "__main__":
             validation_steps    = epoch_step_val,
             epochs              = end_epoch,
             initial_epoch       = start_epoch,
-            use_multiprocessing = True if num_workers != 0 else False,
+            use_multiprocessing = True if num_workers > 1 else False,
             workers             = num_workers,
             callbacks           = [logging, checkpoint, reduce_lr, early_stopping, loss_history]
         )
