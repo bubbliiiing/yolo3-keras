@@ -163,16 +163,16 @@ if __name__ == "__main__":
         start_epoch = Init_Epoch
         end_epoch   = Freeze_Epoch
 
-        model.compile(optimizer=Adam(lr = lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
-
-        train_dataloader    = YoloDatasets(train_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = True)
-        val_dataloader      = YoloDatasets(val_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = False)
-
         epoch_step          = num_train // batch_size
         epoch_step_val      = num_val // batch_size
 
         if epoch_step == 0 or epoch_step_val == 0:
             raise ValueError('数据集过小，无法进行训练，请扩充数据集。')
+
+        model.compile(optimizer=Adam(lr = lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+
+        train_dataloader    = YoloDatasets(train_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = True)
+        val_dataloader      = YoloDatasets(val_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = False)
 
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
         model.fit_generator(
@@ -196,16 +196,16 @@ if __name__ == "__main__":
         start_epoch = Freeze_Epoch
         end_epoch   = UnFreeze_Epoch
 
-        model.compile(optimizer=Adam(lr = lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
-
-        train_dataloader    = YoloDatasets(train_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = True)
-        val_dataloader      = YoloDatasets(val_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = False)
-
         epoch_step          = num_train // batch_size
         epoch_step_val      = num_val // batch_size
 
         if epoch_step == 0 or epoch_step_val == 0:
             raise ValueError('数据集过小，无法进行训练，请扩充数据集。')
+
+        model.compile(optimizer=Adam(lr = lr), loss={'yolo_loss': lambda y_true, y_pred: y_pred})
+
+        train_dataloader    = YoloDatasets(train_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = True)
+        val_dataloader      = YoloDatasets(val_lines, input_shape, anchors, batch_size, num_classes, anchors_mask, train = False)
 
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
         model.fit_generator(
