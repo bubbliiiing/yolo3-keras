@@ -162,7 +162,7 @@ def yolo_loss(args, input_shape, anchors, anchors_mask, num_classes, ignore_thre
         #-----------------------------------------------------------#
         #   将真实框进行编码，使其格式与预测的相同，后面用于计算loss
         #-----------------------------------------------------------#
-        raw_true_xy = y_true[l][..., :2] * grid_shapes[l][:] - grid
+        raw_true_xy = y_true[l][..., :2] * grid_shapes[l][::-1] - grid
         raw_true_wh = K.log(y_true[l][..., 2:4] / anchors[anchors_mask[l]] * input_shape[::-1])
 
         #-----------------------------------------------------------#
