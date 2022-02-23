@@ -42,6 +42,9 @@ class YoloDatasets(keras.utils.Sequence):
         y_true      = self.preprocess_true_boxes(box_data, self.input_shape, self.anchors, self.num_classes)
         return [image_data, *y_true], np.zeros(self.batch_size)
 
+    def on_epoch_end(self):
+        shuffle(self.annotation_lines)
+
     def rand(self, a=0, b=1):
         return np.random.rand()*(b-a) + a
 
@@ -160,9 +163,6 @@ class YoloDatasets(keras.utils.Sequence):
             box_data[:len(box)] = box
         
         return image_data, box_data
-
-    def on_epoch_begin(self):
-        shuffle(self.annotation_lines)
 
     def preprocess_true_boxes(self, true_boxes, input_shape, anchors, num_classes):
         assert (true_boxes[..., 4]<num_classes).all(), 'class id must be less than num_classes'
