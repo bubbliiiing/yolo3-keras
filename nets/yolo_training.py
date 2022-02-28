@@ -253,7 +253,7 @@ def yolo_loss(
             #-----------------------------------------------------------#
             raw_true_box    = y_true[l][...,0:4]
             ciou            = box_ciou(pred_box, raw_true_box)
-            ciou_loss       = object_mask * (1 - ciou) * box_loss_scale
+            ciou_loss       = object_mask * (1 - ciou)
             location_loss   = K.sum(ciou_loss)
         else:
             #-----------------------------------------------------------#
@@ -275,7 +275,7 @@ def yolo_loss(
             #   wh_loss用于计算宽高损失
             #-----------------------------------------------------------#
             wh_loss         = object_mask * box_loss_scale * 0.5 * K.square(raw_true_wh - raw_pred[...,2:4])
-            location_loss   = K.sum(xy_loss) + K.sum(wh_loss)
+            location_loss   = (K.sum(xy_loss) + K.sum(wh_loss)) * 0.1
             
         #------------------------------------------------------------------------------#
         #   如果该位置本来有框，那么计算1与置信度的交叉熵
