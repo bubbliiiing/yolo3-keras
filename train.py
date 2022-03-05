@@ -228,19 +228,19 @@ if __name__ == "__main__":
         #   判断当前batch_size与64的差别，自适应调整学习率
         #-------------------------------------------------------------------#
         nbs     = 64
-        Init_lr = max(batch_size / nbs * Init_lr, 1e-4)
-        Min_lr  = max(batch_size / nbs * Min_lr, 1e-6)
+        Init_lr_fit = max(batch_size / nbs * Init_lr, 1e-4)
+        Min_lr_fit  = max(batch_size / nbs * Min_lr, 1e-6)
 
         optimizer = {
-            'adam'  : Adam(lr = Init_lr, beta_1 = momentum),
-            'sgd'   : SGD(lr = Init_lr, momentum = momentum, nesterov=True)
+            'adam'  : Adam(lr = Init_lr_fit, beta_1 = momentum),
+            'sgd'   : SGD(lr = Init_lr_fit, momentum = momentum, nesterov=True)
         }[optimizer_type]
         model.compile(optimizer = optimizer, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
     
         #---------------------------------------#
         #   获得学习率下降的公式
         #---------------------------------------#
-        lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr, Min_lr, UnFreeze_Epoch)
+        lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
 
         epoch_step          = num_train // batch_size
         epoch_step_val      = num_val // batch_size
@@ -290,6 +290,19 @@ if __name__ == "__main__":
             start_epoch = Freeze_Epoch if start_epoch < Freeze_Epoch else start_epoch
             end_epoch   = UnFreeze_Epoch
                 
+            #-------------------------------------------------------------------#
+            #   判断当前batch_size与64的差别，自适应调整学习率
+            #-------------------------------------------------------------------#
+            nbs     = 64
+            Init_lr_fit = max(batch_size / nbs * Init_lr, 1e-4)
+            Min_lr_fit  = max(batch_size / nbs * Min_lr, 1e-6)
+            #---------------------------------------#
+            #   获得学习率下降的公式
+            #---------------------------------------#
+            lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
+            lr_scheduler    = LearningRateScheduler(lr_scheduler_func, verbose = 1)
+            callbacks       = [logging, loss_history, checkpoint, lr_scheduler, early_stopping]
+            
             for i in range(len(model.layers)): 
                 model.layers[i].trainable = True
             model.compile(optimizer = optimizer, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
