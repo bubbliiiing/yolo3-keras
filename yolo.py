@@ -238,6 +238,49 @@ class YOLO(object):
         tact_time = (t2 - t1) / test_interval
         return tact_time
 
+    def detect_heatmap(self, image, heatmap_save_path):
+        import cv2
+        import matplotlib.pyplot as plt
+        def sigmoid(x):
+            y = 1.0 / (1.0 + np.exp(-x))
+            return y
+        #---------------------------------------------------------#
+        #   在这里将图像转换成RGB图像，防止灰度图在预测时报错。
+        #   代码仅仅支持RGB图像的预测，所有其它类型的图像都会转化成RGB
+        #---------------------------------------------------------#
+        image       = cvtColor(image)
+        #---------------------------------------------------------#
+        #   给图像增加灰条，实现不失真的resize
+        #   也可以直接resize进行识别
+        #---------------------------------------------------------#
+        image_data  = resize_image(image, (self.input_shape[1], self.input_shape[0]), self.letterbox_image)
+        #---------------------------------------------------------#
+        #   添加上batch_size维度，并进行归一化
+        #---------------------------------------------------------#
+        image_data  = np.expand_dims(preprocess_input(np.array(image_data, dtype='float32')), 0)
+        
+        output  = self.yolo_model.predict(image_data)
+        
+        plt.imshow(image, alpha=1)
+        plt.axis('off')
+        mask    = np.zeros((image.size[1], image.size[0]))
+        for sub_output in output:
+            b, h, w, c = np.shape(sub_output)
+            sub_output = np.reshape(sub_output, [b, h, w, 3, -1])[0]
+            score      = np.max(sigmoid(sub_output[..., 4]), -1)
+            score      = cv2.resize(score, (image.size[1], image.size[0]))
+            normed_score    = (score * 255).astype('uint8')
+            mask            = np.maximum(mask, normed_score)
+            
+        plt.imshow(mask, alpha=0.5, interpolation='nearest', cmap="jet")
+
+        plt.axis('off')
+        plt.subplots_adjust(top=1, bottom=0, right=1,  left=0, hspace=0, wspace=0)
+        plt.margins(0, 0)
+        plt.savefig(heatmap_save_path, dpi=200, bbox_inches='tight', pad_inches = -0.1)
+        print("Save to the " + heatmap_save_path)
+        plt.show()
+
     def get_map_txt(self, image_id, image, class_names, map_out_path):
         f           = open(os.path.join(map_out_path, "detection-results/"+image_id+".txt"),"w") 
         #---------------------------------------------------------#
