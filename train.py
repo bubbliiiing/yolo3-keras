@@ -212,9 +212,11 @@ if __name__ == "__main__":
         print('Load weights {}.'.format(model_path))
         model_body.load_weights(model_path, by_name=True, skip_mismatch=True)
 
-    model = get_train_model(model_body, input_shape, num_classes, anchors, anchors_mask)
     if ngpus_per_node > 1:
-        parallel_model = multi_gpu_model(model, gpus=ngpus_per_node)
+        model = multi_gpu_model(model_body, gpus=ngpus_per_node)
+        model = get_train_model(model, input_shape, num_classes, anchors, anchors_mask)
+    else:
+        model = get_train_model(model_body, input_shape, num_classes, anchors, anchors_mask)
     
     #---------------------------#
     #   读取数据集对应的txt
@@ -294,7 +296,7 @@ if __name__ == "__main__":
         logging         = TensorBoard(log_dir)
         loss_history    = LossHistory(log_dir)
         if ngpus_per_node > 1:
-            checkpoint      = ParallelModelCheckpoint(model, os.path.join(save_dir, "ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5"), 
+            checkpoint      = ParallelModelCheckpoint(model_body, os.path.join(save_dir, "ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5"), 
                                     monitor = 'val_loss', save_weights_only = True, save_best_only = False, period = save_period)
         else:
             checkpoint      = ModelCheckpoint(os.path.join(save_dir, "ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5"), 
@@ -305,30 +307,17 @@ if __name__ == "__main__":
 
         if start_epoch < end_epoch:
             print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
-            if ngpus_per_node > 1:
-                parallel_model.fit_generator(
-                    generator           = train_dataloader,
-                    steps_per_epoch     = epoch_step,
-                    validation_data     = val_dataloader,
-                    validation_steps    = epoch_step_val,
-                    epochs              = end_epoch,
-                    initial_epoch       = start_epoch,
-                    use_multiprocessing = True if num_workers > 1 else False,
-                    workers             = num_workers,
-                    callbacks           = callbacks
-                )
-            else:
-                model.fit_generator(
-                    generator           = train_dataloader,
-                    steps_per_epoch     = epoch_step,
-                    validation_data     = val_dataloader,
-                    validation_steps    = epoch_step_val,
-                    epochs              = end_epoch,
-                    initial_epoch       = start_epoch,
-                    use_multiprocessing = True if num_workers > 1 else False,
-                    workers             = num_workers,
-                    callbacks           = callbacks
-                )
+            model.fit_generator(
+                generator           = train_dataloader,
+                steps_per_epoch     = epoch_step,
+                validation_data     = val_dataloader,
+                validation_steps    = epoch_step_val,
+                epochs              = end_epoch,
+                initial_epoch       = start_epoch,
+                use_multiprocessing = True if num_workers > 1 else False,
+                workers             = num_workers,
+                callbacks           = callbacks
+            )
         #---------------------------------------#
         #   如果模型有冻结学习部分
         #   则解冻，并设置参数
@@ -353,8 +342,8 @@ if __name__ == "__main__":
             lr_scheduler    = LearningRateScheduler(lr_scheduler_func, verbose = 1)
             callbacks       = [logging, loss_history, checkpoint, lr_scheduler]
             
-            for i in range(len(model.layers)): 
-                model.layers[i].trainable = True
+            for i in range(len(model_body.layers)): 
+                model_body.layers[i].trainable = True
             model.compile(optimizer = optimizer, loss={'yolo_loss': lambda y_true, y_pred: y_pred})
 
             epoch_step      = num_train // batch_size
@@ -367,27 +356,14 @@ if __name__ == "__main__":
             val_dataloader.batch_size      = Unfreeze_batch_size
 
             print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
-            if ngpus_per_node > 1:
-                parallel_model.fit_generator(
-                    generator           = train_dataloader,
-                    steps_per_epoch     = epoch_step,
-                    validation_data     = val_dataloader,
-                    validation_steps    = epoch_step_val,
-                    epochs              = end_epoch,
-                    initial_epoch       = start_epoch,
-                    use_multiprocessing = True if num_workers > 1 else False,
-                    workers             = num_workers,
-                    callbacks           = callbacks
-                )
-            else:
-                model.fit_generator(
-                    generator           = train_dataloader,
-                    steps_per_epoch     = epoch_step,
-                    validation_data     = val_dataloader,
-                    validation_steps    = epoch_step_val,
-                    epochs              = end_epoch,
-                    initial_epoch       = start_epoch,
-                    use_multiprocessing = True if num_workers > 1 else False,
-                    workers             = num_workers,
-                    callbacks           = callbacks
-                )
+            model.fit_generator(
+                generator           = train_dataloader,
+                steps_per_epoch     = epoch_step,
+                validation_data     = val_dataloader,
+                validation_steps    = epoch_step_val,
+                epochs              = end_epoch,
+                initial_epoch       = start_epoch,
+                use_multiprocessing = True if num_workers > 1 else False,
+                workers             = num_workers,
+                callbacks           = callbacks
+            )
