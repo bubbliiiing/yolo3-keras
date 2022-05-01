@@ -63,6 +63,15 @@ def preprocess_input(image):
     image /= 255.0
     return image
 
+def show_config(**kwargs):
+    print('Configurations:')
+    print('-' * 70)
+    print('|%25s | %40s|' % ('keys', 'values'))
+    print('-' * 70)
+    for key, value in kwargs.items():
+        print('|%25s | %40s|' % (str(key), str(value)))
+    print('-' * 70)
+    
 #-------------------------------------------------------------------------------------------------------------------------------#
 #   From https://github.com/ckyrkou/Keras_FLOP_Estimator 
 #   Fix lots of bugs
