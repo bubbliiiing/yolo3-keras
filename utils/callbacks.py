@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from .utils import cvtColor, preprocess_input, resize_image
 from .utils_bbox import DecodeBox
-from .utils_map import get_map
+from .utils_map import get_coco_map, get_map
 
 
 class LossHistory(keras.callbacks.Callback):
@@ -99,35 +99,43 @@ class EvalCallback(keras.callbacks.Callback):
         super(EvalCallback, self).__init__()
         
         self.input_image_shape  = K.placeholder(shape=(2, ))
+        self.sess               = K.get_session()
+        
         self.model_body         = model_body
+        self.input_shape        = input_shape
+        self.anchors            = anchors
+        self.anchors_mask       = anchors_mask
+        self.class_names        = class_names
+        self.num_classes        = num_classes
+        self.val_lines          = val_lines
+        self.log_dir            = log_dir
+        self.map_out_path       = map_out_path
+        self.max_boxes          = max_boxes
+        self.confidence         = confidence
+        self.nms_iou            = nms_iou
+        self.letterbox_image    = letterbox_image
+        self.MINOVERLAP         = MINOVERLAP
+        self.period             = period
+        
         #---------------------------------------------------------#
         #   在yolo_eval函数中，我们会对预测结果进行后处理
         #   后处理的内容包括，解码、非极大抑制、门限筛选等
         #---------------------------------------------------------#
-        boxes, scores, classes  = DecodeBox(
-            model_body.output, 
-            anchors,
-            num_classes, 
+        self.boxes, self.scores, self.classes  = DecodeBox(
+            self.model_body.output, 
+            self.anchors,
+            self.num_classes, 
             self.input_image_shape, 
-            input_shape, 
-            anchor_mask     = anchors_mask,
-            max_boxes       = max_boxes,
-            confidence      = confidence, 
-            nms_iou         = nms_iou, 
-            letterbox_image = letterbox_image
+            self.input_shape, 
+            anchor_mask     = self.anchors_mask,
+            max_boxes       = self.max_boxes,
+            confidence      = self.confidence, 
+            nms_iou         = self.nms_iou, 
+            letterbox_image = self.letterbox_image
         )
-        self.boxes, self.scores, self.classes = boxes, scores, classes
-        self.input_shape        = input_shape
-        self.class_names        = class_names
-        self.val_lines          = val_lines
-        self.log_dir            = log_dir
-        self.map_out_path       = map_out_path
-        self.letterbox_image    = letterbox_image
-        self.MINOVERLAP         = MINOVERLAP
-        self.period             = period
-        self.sess               = K.get_session()
         
-        self.map = []
+        self.maps       = []
+        self.epoches    = []
 
     def get_map_txt(self, image_id, image, class_names, map_out_path):
         f           = open(os.path.join(map_out_path, "detection-results/"+image_id+".txt"),"w") 
@@ -154,6 +162,11 @@ class EvalCallback(keras.callbacks.Callback):
                 self.input_image_shape: [image.size[1], image.size[0]],
                 K.learning_phase(): 0})
 
+        top_100     = np.argsort(out_scores)[::-1][:self.max_boxes]
+        out_boxes   = out_boxes[top_100]
+        out_scores  = out_scores[top_100]
+        out_classes = out_classes[top_100]
+        
         for i, c in enumerate(out_classes):
             predicted_class             = self.class_names[int(c)]
             score                       = str(out_scores[i])
@@ -201,29 +214,23 @@ class EvalCallback(keras.callbacks.Callback):
                         new_f.write("%s %s %s %s %s\n" % (obj_name, left, top, right, bottom))
                         
             print("Calculate Map.")
-            temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
-            self.map.append(temp_map)
-            #------------------------------#
-            #   获得真实框txt
-            #------------------------------#
-            iters = range(len(self.map))
+            try:
+                temp_map = get_coco_map(class_names = self.class_names, path = self.map_out_path)[1]
+            except:
+                temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
+            self.maps.append(temp_map)
+            self.epoches.append(epoch)
 
+            with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
+                f.write(str(temp_map))
+                f.write("\n")
+            
             plt.figure()
-            plt.plot(iters, self.map, 'red', linewidth = 2, label='train map')
-            # try:
-            #     if len(self.losses) < 25:
-            #         num = 5
-            #     else:
-            #         num = 15
-                
-            #     plt.plot(iters, scipy.signal.savgol_filter(self.losses, num, 3), 'green', linestyle = '--', linewidth = 2, label='smooth train loss')
-            #     plt.plot(iters, scipy.signal.savgol_filter(self.val_loss, num, 3), '#8B4513', linestyle = '--', linewidth = 2, label='smooth val loss')
-            # except:
-            #     pass
+            plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
 
             plt.grid(True)
             plt.xlabel('Epoch')
-            plt.ylabel('Map')
+            plt.ylabel('Map %s'%str(self.MINOVERLAP))
             plt.title('A Map Curve')
             plt.legend(loc="upper right")
 
