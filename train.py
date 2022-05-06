@@ -13,7 +13,7 @@ from keras.utils.multi_gpu_utils import multi_gpu_model
 from nets.yolo import get_train_model, yolo_body
 from nets.yolo_training import get_lr_scheduler
 from utils.callbacks import (ExponentDecayScheduler, LossHistory,
-                             ParallelModelCheckpoint)
+                             ParallelModelCheckpoint, EvalCallback)
 from utils.dataloader import YoloDatasets
 from utils.utils import get_anchors, get_classes, show_config
 
@@ -330,7 +330,8 @@ if __name__ == "__main__":
                                     monitor = 'val_loss', save_weights_only = True, save_best_only = True, period = 1)
         early_stopping  = EarlyStopping(monitor='val_loss', min_delta = 0, patience = 10, verbose = 1)
         lr_scheduler    = LearningRateScheduler(lr_scheduler_func, verbose = 1)
-        callbacks       = [logging, loss_history, checkpoint, checkpoint_last, checkpoint_best, lr_scheduler]
+        eval_callback   = EvalCallback(model_body, input_shape, anchors, anchors_mask, class_names, num_classes, val_lines, log_dir)
+        callbacks       = [logging, loss_history, checkpoint, checkpoint_last, checkpoint_best, lr_scheduler, eval_callback]
 
         if start_epoch < end_epoch:
             print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
@@ -367,7 +368,7 @@ if __name__ == "__main__":
             #---------------------------------------#
             lr_scheduler_func = get_lr_scheduler(lr_decay_type, Init_lr_fit, Min_lr_fit, UnFreeze_Epoch)
             lr_scheduler    = LearningRateScheduler(lr_scheduler_func, verbose = 1)
-            callbacks       = [logging, loss_history, checkpoint, checkpoint_last, checkpoint_best, lr_scheduler]
+            callbacks       = [logging, loss_history, checkpoint, checkpoint_last, checkpoint_best, lr_scheduler, eval_callback]
             
             for i in range(len(model_body.layers)): 
                 model_body.layers[i].trainable = True
