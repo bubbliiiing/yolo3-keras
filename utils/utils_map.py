@@ -5,9 +5,15 @@ import operator
 import os
 import shutil
 import sys
-
+try:
+    from pycocotools.coco import COCO
+    from pycocotools.cocoeval import COCOeval
+except:
+    pass
 import cv2
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 import numpy as np
 
 '''
@@ -290,6 +296,10 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
     else:
         os.makedirs(RESULTS_FILES_PATH)
     if draw_plot:
+        try:
+            matplotlib.use('TkAgg')
+        except:
+            pass
         os.makedirs(os.path.join(RESULTS_FILES_PATH, "AP"))
         os.makedirs(os.path.join(RESULTS_FILES_PATH, "F1"))
         os.makedirs(os.path.join(RESULTS_FILES_PATH, "Recall"))
@@ -882,9 +892,6 @@ def preprocess_dr(dr_path, class_names):
     return results
  
 def get_coco_map(class_names, path):
-    from pycocotools.coco import COCO
-    from pycocotools.cocoeval import COCOeval
-    
     GT_PATH     = os.path.join(path, 'ground-truth')
     DR_PATH     = os.path.join(path, 'detection-results')
     COCO_PATH   = os.path.join(path, 'coco_eval')

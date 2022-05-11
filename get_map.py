@@ -4,9 +4,9 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 from tqdm import tqdm
 
+from yolo import YOLO
 from utils.utils import get_classes
 from utils.utils_map import get_coco_map, get_map
-from yolo import YOLO
 
 if __name__ == "__main__":
     '''
