@@ -31,6 +31,8 @@ Mobilenet-Yolov4 | https://github.com/bubbliiiing/mobilenet-yolov4-keras
 YoloV5-V5.0 | https://github.com/bubbliiiing/yolov5-keras
 YoloV5-V6.1 | https://github.com/bubbliiiing/yolov5-v6.1-keras
 YoloX | https://github.com/bubbliiiing/yolox-keras
+YoloV7 | https://github.com/bubbliiiing/yolov7-keras
+Yolov7-tiny | https://github.com/bubbliiiing/yolov7-tiny-keras
 
 ## 性能情况
 | 训练数据集 | 权值文件名称 | 测试数据集 | 输入图片大小 | mAP 0.5:0.95 | mAP 0.5 |
